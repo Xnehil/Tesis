@@ -2,3 +2,8 @@
 *.csv
 *.bib
 *.eaf
+*.xlsx
+*.docx
+
+#Ignore pycache
+__pycache__/
