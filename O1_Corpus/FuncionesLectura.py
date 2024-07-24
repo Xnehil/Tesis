@@ -180,6 +180,67 @@ def leerEaf(ruta="../textos", data={}):
                         # print("Entrando en tier {} con locutor {} en archivo {}".format(tier_id, locutor, filename))
                         dentro_tier = True
 
+def clean_text(text):
+    return re.sub(r'\(\d\)', '', text).strip()
+
+def parse_txt(file):
+    #Función de Amy Trujillo para leer el diccionario
+    data = []
+    with open(file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        
+    current_entry = {}
+    current_tag = None
+    current_value = []
+
+    for line in lines:
+        line = line.strip()
+        if line.startswith('\\lx'):
+            if current_entry:
+                if current_tag:
+                    current_entry[current_tag] = ' '.join(current_value).strip()
+                data.append(current_entry)
+            current_entry = {'lex_isc': clean_text(line.strip('\\lx').strip())}
+            current_tag = None
+            current_value = []
+        elif line.startswith('\\lc'):
+            current_entry['lex_citation'] = clean_text(line.strip('\\lc').strip())
+            current_tag = None
+            current_value = []
+        elif line.startswith('\\ps'):
+            current_entry['pos'] = line.strip('\\ps').strip()
+            current_tag = None
+        elif line.startswith('\\gn'):
+            if current_tag:
+                current_entry[current_tag] = ' '.join(current_value).strip()
+            current_tag = 'gloss_es'
+            current_value = [line.strip('\\gn').strip()]
+        elif line.startswith('\\rn') and 'gloss_es' not in current_entry:
+            if current_tag:
+                current_entry[current_tag] = ' '.join(current_value).strip()
+            current_tag = 'gloss_es'
+            current_value = [line.strip('\\rn').strip()]
+        elif line.startswith('\\dn'):
+            if current_tag:
+                current_entry[current_tag] = ' '.join(current_value).strip()
+            current_tag = 'def_es'
+            current_value = [line.strip('\\dn').strip()]
+        elif line.startswith('\\'):
+            if current_tag:
+                current_entry[current_tag] = ' '.join(current_value).strip()
+            current_tag = None
+        else:
+            if current_tag:
+                current_value.append(line)
+
+    if current_entry:
+        if current_tag:
+            current_entry[current_tag] = ' '.join(current_value).strip()
+        data.append(current_entry)
+    
+    df = pd.DataFrame(data, columns=['lex_isc', 'lex_citation', 'pos', 'gloss_es', 'def_es'])
+    return df
+
 
 
 def is_spanish(text):
@@ -193,6 +254,7 @@ def leerCorpus(limpiar=True):
     leerTxt(data=data)
     leerEaf(data=data)
     df = pd.DataFrame(data).transpose().reset_index(drop=True)
+    df_diccionario = parse_txt('../textos/DICCIONARIOISKONAWA7.txt')
     #Limpiar 
     if limpiar:
         print(f"Antes de limpiar: {df.shape}")
