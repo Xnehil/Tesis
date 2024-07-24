@@ -249,17 +249,61 @@ def is_spanish(text):
     except:
         return False
     
-def leerCorpus(limpiar=True):
+def limpiarCorpus(df):
+    print(f"Antes de limpiar: {df.shape}")
+    #Español
+    df = df[~df['transcription'].apply(is_spanish)]
+    print(f"Después de eliminar español: {df.shape}")
+    #Eliminar filas con texto vacío
+    df = df[df['transcription'].str.strip() != '']
+    print(f"Después de eliminar vacíos: {df.shape}")
+    #Eliminar repetidos considerando las columnas transcription y gloss_es
+    df = df.drop_duplicates(subset=['transcription', 'gloss_es'])
+    print(f"Después de limpiar duplicados: {df.shape}")
+
+    return df
+    
+def leerCorpus(hacerLimpieza=True):
     data = {}
     leerTxt(data=data)
     leerEaf(data=data)
     df = pd.DataFrame(data).transpose().reset_index(drop=True)
     df_diccionario = parse_txt('../textos/DICCIONARIOISKONAWA7.txt')
+
+    #Del df_diccionario, las columnas son lex_isc 	lex_citation 	pos 	gloss_es 	def_es
+    #Del df, las columnas son id 	speaker 	transcription 	text 	gloss_es 	free_translation 	morpheme_break 	pos 	file
+
+    #Unir los dos dataframes con la siguiente lógica:
+    #id será un entero que se incrementa por cada fila
+    #speaker será Dictionary
+    #transcription será lex_citation si no es nulo o vacío, de lo contrario será lex_isc
+    #text será null
+    #gloss_es será gloss_es
+    #free_translation será def_es
+    #morpheme_break será null
+    #pos será pos
+    #file será DICCIONARIOISKONAWA7.txt
+
+    df_diccionario['id'] = range(1, len(df_diccionario)+1)
+    df_diccionario['speaker'] = 'Dictionary'
+    df_diccionario['transcription'] = df_diccionario['lex_citation'].fillna(df_diccionario['lex_isc'])
+    df_diccionario['text'] = None
+    df_diccionario['free_translation'] = df_diccionario['def_es']
+    df_diccionario['morpheme_break'] = None
+    df_diccionario['pos'] = df_diccionario['pos']
+    df_diccionario['file'] = 'DICCIONARIOISKONAWA7.txt'
+
+    df_diccionario = df_diccionario.drop(columns=['lex_isc', 'lex_citation', 'def_es'])
+    df_diccionario = df_diccionario[['id', 'speaker', 'transcription', 'text', 'gloss_es', 'free_translation', 'morpheme_break', 'pos', 'file']]
+
+    df = pd.concat([df, df_diccionario], ignore_index=True)
+    df = df.dropna(subset=['transcription'])
+    df = df.drop_duplicates(subset=['transcription', 'gloss_es', 'pos'])
+    df = df.reset_index(drop=True)
+
     #Limpiar 
-    if limpiar:
-        print(f"Antes de limpiar: {df.shape}")
-        df = df[~df['texto'].apply(is_spanish)]
-        print(f"Después de limpiar: {df.shape}")
+    if hacerLimpieza:
+        df = limpiarCorpus(df)
     return df
 
 
