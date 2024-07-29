@@ -109,9 +109,15 @@ def leerEaf(ruta="../textos", data={}):
                     continue
                 #Buscar fin de tier
                 end_tier_match = re.search(r'</TIER>', line)
-                if end_tier_match:
-                    # print('End tier')
+                # Search for the self-closing tier pattern
+                self_closing_tier_match = re.search(r'<TIER\s+.*?/>', line)
+
+                # Check if either pattern is found
+                if end_tier_match or self_closing_tier_match:
                     dentro_tier = False
+                    # If it's a self-closing tier, ignore the line
+                    if self_closing_tier_match:
+                        continue
 
                 if dentro_tier:
                     if tier_id.startswith('trs@'):
@@ -210,7 +216,7 @@ def parse_txt(file):
         elif line.startswith('\\ps'):
             current_entry['pos'] = line.strip('\\ps').strip()
             current_tag = None
-        elif line.startswith('\\gn'):
+        elif line.startswith('\\gn') and 'gloss_es' not in current_entry:
             if current_tag:
                 current_entry[current_tag] = ' '.join(current_value).strip()
             current_tag = 'gloss_es'
@@ -220,7 +226,7 @@ def parse_txt(file):
                 current_entry[current_tag] = ' '.join(current_value).strip()
             current_tag = 'gloss_es'
             current_value = [line.strip('\\rn').strip()]
-        elif line.startswith('\\dn'):
+        elif line.startswith('\\dn') and 'def_es' not in current_entry:
             if current_tag:
                 current_entry[current_tag] = ' '.join(current_value).strip()
             current_tag = 'def_es'
@@ -296,14 +302,27 @@ def leerCorpus(hacerLimpieza=True):
     df_diccionario = df_diccionario.drop(columns=['lex_isc', 'lex_citation', 'def_es'])
     df_diccionario = df_diccionario[['id', 'speaker', 'transcription', 'text', 'gloss_es', 'free_translation', 'morpheme_break', 'pos', 'file']]
 
+    df_diccionario['free_translation'] = df_diccionario['free_translation'].fillna(df_diccionario['gloss_es'])
+
     df = pd.concat([df, df_diccionario], ignore_index=True)
     df = df.dropna(subset=['transcription'])
-    df = df.drop_duplicates(subset=['transcription', 'gloss_es', 'pos'])
     df = df.reset_index(drop=True)
 
     #Limpiar 
     if hacerLimpieza:
         df = limpiarCorpus(df)
+
+    #Reordenar columnas tal que el orden sea id, speaker, transcription, text, morpheme_break, pos, gloss_es, free_translation, file
+    df = df[['id', 'speaker', 'transcription', 'text', 'morpheme_break', 'pos', 'gloss_es', 'free_translation', 'file']]
+
+    #Id debe ser file sin la extensión seguido de un guión y el id
+    df['id'] = df['file'].str.replace('.txt', '', regex=False) + '_' + df['id'].astype(str)
+
+    #Cualquier campo vacío o cadena vacía debe ser null
+    df = df.replace('', None)
+
+    #Eliminar filas con None en id, speaker, transcription, free_translation, file
+    df = df.dropna(subset=['id', 'speaker', 'transcription', 'free_translation', 'file'])
     return df
 
 
