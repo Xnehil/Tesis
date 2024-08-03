@@ -258,7 +258,7 @@ def is_spanish(text):
 def limpiarCorpus(df):
     print(f"Antes de limpiar: {df.shape}")
     #Español
-    df = df[~df['transcription'].apply(is_spanish)]
+    df = df[df.apply(lambda row: row['speaker'] == 'Dictionary' or not is_spanish(row['transcription']), axis=1)]
     print(f"Después de eliminar español: {df.shape}")
     #Eliminar filas con texto vacío
     df = df[df['transcription'].str.strip() != '']
