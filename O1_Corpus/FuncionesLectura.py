@@ -326,6 +326,9 @@ def leerCorpus(hacerLimpieza=True):
 
     # Normalizar pos
     df['pos'] = df['pos'].apply(lambda x: normalizePos(x) if pd.notnull(x) and x.strip() != '' else x)
+
+    #Quitar '/' de transcription, text, morpheme_break, pos, gloss_es, free_translation
+    df = df.applymap(lambda x: re.sub(r'/', '', x) if pd.notnull(x) else x)
     return df
 
 
