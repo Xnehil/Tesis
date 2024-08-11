@@ -323,6 +323,43 @@ def leerCorpus(hacerLimpieza=True):
 
     #Eliminar filas con None en id, speaker, transcription, free_translation, file
     df = df.dropna(subset=['id', 'speaker', 'transcription', 'free_translation', 'file'])
+
+    # Normalizar pos
+    df['pos'] = df['pos'].apply(lambda x: normalizePos(x) if pd.notnull(x) and x.strip() != '' else x)
     return df
 
 
+def normalizePos(pos_tags):
+    normalizeMap={
+        'adj': 'adj.', 'adj.': 'adj.',
+        'adv': 'adv.', 'advv.': 'adv.', '-adv.': '-adv.', 
+        'art.': 'art.', 
+        'conec': 'conec.', 'conect.': 'conec.','conj.': 'conec.',
+        'cuant.': 'cuant.','num': 'num.', 
+        'dem': 'dem.', 'demadv.': 'dem.',
+        'det.': 'det.',
+        'ide.': 'ide.','ideo': 'ide.', 
+        'int.': 'int.', 'pal.int': 'int.','prom': 'int.',
+        'inter.': 'interj.', 'interj.': 'interj.', 
+        'muletilla.': 'muletilla.',
+        'n.': 'n.', '-n.': 'n.',
+        'ono': 'ono.',  #onomatopeyas
+        'part.': 'part.', #partículas
+        'pos': 'pos.','post': 'pos.', 'post.': 'pos.', #posposiciones
+        'pre.': 'prep.', 'pref.-': 'pre.', 'prep.': 'prep.', 
+        'pron': 'pron.',
+        'suf.': 'suf.', '-suf': 'suf.', '-suf.': 'suf.', 
+        'v': 'v.', 'v.amb': 'v.', 'v.ambi': 'v.', 'v.int': 'v.', 'v.intr': 'v.', 'v.tr': 'v.','-v.': 'v.',
+        '-': 'punct.', '.': 'punct.', '/': 'punct.', ';': 'punct.', '?': 'punct.',
+        '-lig.': '-lig.',  
+        '-suf': '-suf', '-suf.': '-suf.','-sufv.intr.': '-suf.', '-suj.': '-suf.',
+        'FP': 'FP', '[...]': '[...]', '[canto]': '[canto]', '\\ps': '\\ps',
+        'clit': 'clit.', 'clitdem': 'clit.','clitn.': 'clit.','clitpart.': 'clit.','clitv.': 'clit.'
+    } 
+
+    def replaceMatch(match):
+        word = match.group(0)
+        return normalizeMap.get(word, word)
+    
+    normalized_pos_tags = re.sub(r'\S+', replaceMatch, pos_tags)
+    return normalized_pos_tags
