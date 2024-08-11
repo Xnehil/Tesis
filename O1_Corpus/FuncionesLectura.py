@@ -324,11 +324,12 @@ def leerCorpus(hacerLimpieza=True):
     #Eliminar filas con None en id, speaker, transcription, free_translation, file
     df = df.dropna(subset=['id', 'speaker', 'transcription', 'free_translation', 'file'])
 
+    #Quitar '/' de transcription, text, morpheme_break, pos, gloss_es, free_translation
+    df = df.applymap(lambda x: re.sub(r'/', '', x) if pd.notnull(x) else x)
     # Normalizar pos
     df['pos'] = df['pos'].apply(lambda x: normalizePos(x) if pd.notnull(x) and x.strip() != '' else x)
 
-    #Quitar '/' de transcription, text, morpheme_break, pos, gloss_es, free_translation
-    df = df.applymap(lambda x: re.sub(r'/', '', x) if pd.notnull(x) else x)
+    
     return df
 
 
