@@ -5,14 +5,20 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
-def etapa_preprocesamiento(textos):
+def etapa_preprocesamiento(textos, tokenizador=None):
     #Textos es una columna de un dataframe
     #1. Pasar a minúsculas
     textos = textos.str.lower()
     #2. Eliminar caracteres especiales
     textos = textos.apply(lambda x: re.sub(r"[\W\d_]+", " ", x))
-
-    return 
+    #3. Eliminar espacios en blanco extra
+    textos = textos.apply(lambda x: re.sub(r"\s+", " ", x))
+    #4. Eliminar espacios en blanco al principio y al final
+    textos = textos.str.strip()
+    #5. Tokenizar usando SentencePiece
+    if tokenizador:
+        textos = textos.apply(lambda x: tokenizador.encode(x))
+    return textos
 
 def etapa_aumentacion(textos, dict1):
     #Cambiar sustantivos
@@ -25,6 +31,7 @@ def etapa_aumentacion(textos, dict1):
 
     for index, row in textos.iterrows():
         cambiarMorfemas(row, posTagsToAugment, rows_to_add, dict1)
+        alterarPronombres(row, rows_to_add, dict1)
         insertarRuido(row, rows_to_add, dict1)
 
         
@@ -42,21 +49,56 @@ def etapa_vectorizacion(textos):
 def pipeline(df):
     dict1 =estructurasAuxiliares(df)
 
-    # etapa_preprocesamiento(df['transcription'])
+    
     df_aumentado=etapa_aumentacion(df, dict1)
+    df = pd.concat([df, df_aumentado], ignore_index=True)
+    etapa_preprocesamiento(df['transcription'])
     # etapa_vectorizacion(df['transcription'])
     return dict1
 
-def alterarSufijos(row, rowsToAdd, dict1, prob=0.3):
+def alterarPronombres(row, rowsToAdd, dict1, prob=0.3):
+    keys_array = [
+    '1PL', '1PL.P', '1PL:A', '1PL:NOM', '1PL:S', '1SG', '1SG.ABS(SK)', '1SG.GEN(SK)', 
+    '1SG:A', '1SG:A(SK)', '1SG:ERG', '1SG:GEN', '1SG:P', '1SG:S', '1SG:S(SK)', 
+    '2PL(SK)', '2PL:P(SK)', '2PL:S(SK)', '2SG', '2SG.ABS(SK)', '2SG:A', '2SG:ABS', 
+    '2SG:ERG', '2SG:GEN', '2SG:P', '2SG:S', '2SGS', '3PL', '3PL(SK)', '3PL:A', 
+    '3SG', '3SG(SK)', '3SG:A', '3SG:GEN'
+    ]
+    targetDict = {
+    "1S": {"A": "ena", "S": "eah", "P": "ea"},
+    "2S": {"A": "mi", "S": "mi", "P": "mia"},
+    "3S": {"A": "oanton", "S": "oa", "P": "oa"},
+    "1PL_Inclusivo": {"A": "non(bo)", "S": "no(bo)", "P": "no(bo)"},
+    "1PL_Exclusivo": {"A": "enabo", "S": "eahbo", "P": "eabo"},
+    "2PL": {"A": "mibo", "S": "mibo", "P": "miabo"},
+    "3PL": {"A": "aboton", "S": "abo", "P": "abo"}
+    }
+
     if pd.isnull(row['morpheme_break']) or pd.isnull(row['pos']) or pd.isnull(row['gloss_es']):
         return
     morphemes, pos_tags, glosses = parse_morphemes(row)
-    new_data = None
     for morpheme, pos_tag, gloss in zip(morphemes, pos_tags, glosses):
-        if pos_tag == 'suf.' and random.random() < prob:
-            # Identificamos la glosa de la forma algo:algo
-            break
-    return
+        if gloss in keys_array and random.random() < prob:
+            if ':' in gloss or '.' in gloss:
+                # Parse gloss
+                persona, forma = re.split(r'[:.]+', gloss)
+                # Remove (SK) from persona or forma
+                persona = persona.replace("(SK)", "")
+                if forma:
+                    forma = forma.replace("(SK)", "")
+                    if forma not in ['A', 'S', 'P']:
+                        continue
+                else:
+                    continue
+                # Change pronoun
+                persona = random.choice(list(targetDict.keys()))
+                newPronoun = targetDict[persona].get(forma, None)
+                newData = (newPronoun, pos_tag, persona + ":" + forma)
+                newRow = createNewRow(row, newData, morpheme)
+                rowsToAdd.append(newRow)
+        else:
+            # Handle the case where gloss does not contain a colon or a period
+            continue
 
 def insertarRuido(row, rowsToAdd, dict1, prob=0.1):
     #En transcription, se intercambiarán dos caracteres no blancos
@@ -86,22 +128,25 @@ def cambiarMorfemas(row, posTagsToAugment, rowsToAdd, dict1, prob=0.5):
         if pos_tag in posTagsToAugment and random.random() < prob:
             # Cambiar sustantivo
             new_data = random.choice(dict1["pos_tags"][pos_tag])
-            newRow=createNewRow(row, new_data, morpheme, pos_tag)
+            new_data = (new_data[0],pos_tag, new_data[1])
+            newRow=createNewRow(row, new_data, morpheme)
             rowsToAdd.append(newRow)
-    return
 
 
 
-def createNewRow(row, new_data, morpheme, pos_tag):
+def createNewRow(row, new_data, replacedMorpheme):
     newRow = row.copy()
     #Reemplazar en row el morfema por la clave de new_data
-    newRow['morpheme_break'] = newRow['morpheme_break'].replace(morpheme, new_data[0])
+    newRow['morpheme_break'] = newRow['morpheme_break'].replace(replacedMorpheme, new_data[0])
     #Recuperar la posición de new_data
     position = newRow['morpheme_break'].split().index(new_data[0])
-    #No hace falta reemplazar en row el pos en la posición correspondiente porque sigue siendo la misma
+    #Reemplazar en row el pos en la posición correspondiente
+    newRow['pos'] = newRow['pos'].split()
+    newRow['pos'][position] = new_data[1]
+    newRow['pos'] = " ".join(newRow['pos'])
     #Reemplazar en row el gloss en la posición correspondiente
     newRow['gloss_es'] = newRow['gloss_es'].split()
-    newRow['gloss_es'][position] = new_data[1]
+    newRow['gloss_es'][position] = new_data[2]
     newRow['gloss_es'] = " ".join(newRow['gloss_es'])
 
     # id                  : EC-cancion.aku-2013_005
@@ -123,6 +168,8 @@ def createNewRow(row, new_data, morpheme, pos_tag):
 def reconstructText(morphemes):
     text = ""
     for morpheme in morphemes:
+        #Reemplazar posibles _ por espacio en blanco
+        morpheme = morpheme.replace('_', ' ')
         if morpheme.startswith("=") or morpheme.startswith("-"):
             new_morpheme = morpheme[1:]
         else:
@@ -170,7 +217,7 @@ def estructurasAuxiliares(df):
 
 def parse_morphemes(row):
     morphemes = row['morpheme_break'].split()
-    pos_tags = [map_to_universal_tag(tag) for tag in row['pos'].split()]
+    pos_tags = [normalizePos(tag) for tag in row['pos'].split()]
     glosses = row['gloss_es'].split()
 
     return morphemes, pos_tags, glosses
