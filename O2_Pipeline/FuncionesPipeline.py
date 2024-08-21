@@ -58,25 +58,25 @@ def pipeline(df):
     # etapa_vectorizacion(df['transcription'])
     return df
 
-def descargarTokenizador():
+def descargarTokenizador(language='Iskonawa'):
     import requests
 
     # URLs of the tokenizer files
-    model_url = "https://github.com/Xnehil/Tesis/raw/main/O2_Pipeline/tokenizadorIskonawa.model"
-    vocab_url = "https://github.com/Xnehil/Tesis/raw/main/O2_Pipeline/tokenizadorIskonawa.vocab"
+    model_url = "https://github.com/Xnehil/Tesis/raw/main/O2_Pipeline/tokenizador" + language + ".model"
+    vocab_url = "https://github.com/Xnehil/Tesis/raw/main/O2_Pipeline/tokenizador" + language + ".vocab"
 
     # Download the model file
     model_response = requests.get(model_url)
-    with open('tokenizadorIskonawa.model', 'wb') as model_file:
+    with open('tokenizador' + language + '.model', 'wb') as model_file:
         model_file.write(model_response.content)
 
     # Download the vocab file
     vocab_response = requests.get(vocab_url)
-    with open('tokenizadorIskonawa.vocab', 'wb') as vocab_file:
+    with open('tokenizador' + language + '.vocab', 'wb') as vocab_file:
         vocab_file.write(vocab_response.content)
 
     sp = spm.SentencePieceProcessor()
-    sp.load('tokenizadorIskonawa.model')
+    sp.load('tokenizador' + language + '.model')
     return sp
 
 def alterarPronombres(row, rowsToAdd, dict1, prob=0.3):
