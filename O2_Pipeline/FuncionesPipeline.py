@@ -4,8 +4,10 @@ import re
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
+import sentencepiece as spm
 
 def etapa_preprocesamiento(textos, tokenizador=None):
+    
     #Textos es una columna de un dataframe
     #1. Pasar a minúsculas
     textos = textos.str.lower()
@@ -17,7 +19,7 @@ def etapa_preprocesamiento(textos, tokenizador=None):
     textos = textos.str.strip()
     #5. Tokenizar usando SentencePiece
     if tokenizador:
-        textos = textos.apply(lambda x: tokenizador.encode(x))
+        textos = textos.apply(lambda x: tokenizador.encode_as_pieces(x))
     return textos
 
 def etapa_aumentacion(textos, dict1):
@@ -48,13 +50,34 @@ def etapa_vectorizacion(textos):
 
 def pipeline(df):
     dict1 =estructurasAuxiliares(df)
-
+    tokenizador = descargarTokenizador()
     
     df_aumentado=etapa_aumentacion(df, dict1)
     df = pd.concat([df, df_aumentado], ignore_index=True)
-    etapa_preprocesamiento(df['transcription'])
+    df['tokens']=etapa_preprocesamiento(df['transcription'], tokenizador)
     # etapa_vectorizacion(df['transcription'])
-    return dict1
+    return df
+
+def descargarTokenizador():
+    import requests
+
+    # URLs of the tokenizer files
+    model_url = "https://github.com/Xnehil/Tesis/raw/main/O2_Pipeline/tokenizadorIskonawa.model"
+    vocab_url = "https://github.com/Xnehil/Tesis/raw/main/O2_Pipeline/tokenizadorIskonawa.vocab"
+
+    # Download the model file
+    model_response = requests.get(model_url)
+    with open('tokenizadorIskonawa.model', 'wb') as model_file:
+        model_file.write(model_response.content)
+
+    # Download the vocab file
+    vocab_response = requests.get(vocab_url)
+    with open('tokenizadorIskonawa.vocab', 'wb') as vocab_file:
+        vocab_file.write(vocab_response.content)
+
+    sp = spm.SentencePieceProcessor()
+    sp.load('tokenizadorIskonawa.model')
+    return sp
 
 def alterarPronombres(row, rowsToAdd, dict1, prob=0.3):
     keys_array = [
