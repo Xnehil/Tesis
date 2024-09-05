@@ -13,6 +13,7 @@ def etapa_preprocesamiento(textos, tokenizador=None):
     textos = textos.str.lower()
     #2. Eliminar caracteres especiales
     textos = textos.apply(lambda x: re.sub(r"[\W\d_]+", " ", x))
+    textos = textos.apply(lambda x: re.sub(r"ininteligible", "", x))
     #3. Eliminar espacios en blanco extra
     textos = textos.apply(lambda x: re.sub(r"\s+", " ", x))
     #4. Eliminar espacios en blanco al principio y al final
