@@ -7,3 +7,6 @@
 *.zip
 #Ignore pycache
 __pycache__/
+*.npy
+*.vec
+*.model

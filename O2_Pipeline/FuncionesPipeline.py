@@ -44,7 +44,12 @@ def etapa_aumentacion(textos, dict1):
 
 
 
-def etapa_vectorizacion(textos):
+def etapa_vectorizacion(tokens, embeddings=None):
+    if embeddings is None:
+        #Descargar embeddings
+        return
+    #Se necesita un modelo de embeddings para poder vectorizar los tokens
+    
     return
 
 
@@ -52,9 +57,9 @@ def etapa_vectorizacion(textos):
 def pipeline(df):
     dict1 =estructurasAuxiliares(df)
     tokenizador = descargarTokenizador()
-    
     df_aumentado=etapa_aumentacion(df, dict1)
     df = pd.concat([df, df_aumentado], ignore_index=True)
+    df['transcription']=etapa_preprocesamiento(df['transcription'])
     df['tokens']=etapa_preprocesamiento(df['transcription'], tokenizador)
     # etapa_vectorizacion(df['transcription'])
     return df
@@ -126,22 +131,52 @@ def alterarPronombres(row, rowsToAdd, dict1, prob=0.3):
 
 def insertarRuido(row, rowsToAdd, dict1, prob=0.1):
     #En transcription, se intercambiarán dos caracteres no blancos
-    if random.random() < prob:
-        transcription = row['transcription']
-        if len(transcription) < 2:
-            return
-        indicesNoBlancos = [i for i, c in enumerate(transcription) if not c.isspace()]
-        if len(indicesNoBlancos) < 2:
-            return
-        idx1, idx2 = random.sample(indicesNoBlancos, 2)
-        newRow = row.copy()
+    transcription = row['transcription']
+    if len(transcription) < 2:
+        return
         
-        transcription_list = list(transcription)
-        transcription_list[idx1], transcription_list[idx2] = transcription_list[idx2], transcription_list[idx1]
-        
-        newRow['transcription'] = ''.join(transcription_list)
-        rowsToAdd.append(newRow)
-        
+    words = transcription.split()
+    new_words = []
+    
+    for word in words:
+        if len(word) < 2:
+            new_words.append(word)
+            continue
+
+        if random.random() < prob:
+            indicesNoBlancos = [i for i, c in enumerate(word) if not c.isspace()]
+            if len(indicesNoBlancos) < 3:
+                new_words.append(word)
+                continue
+            
+            word_list = list(word)
+            # Choose a random operation: swap, insert, or delete
+            operation = random.choice(['swap', 'insert', 'delete'])
+            
+            if operation == 'swap':
+                # Ensure the two characters being swapped are side-by-side
+                idx = random.choice(indicesNoBlancos[1:-1])  # Choose an index that is not the last one or the first one
+                idx1, idx2 = idx, idx + 1
+                word_list[idx1], word_list[idx2] = word_list[idx2], word_list[idx1]
+            
+            elif operation == 'insert':
+                # Insert a random character at a random position
+                random_char = random.choice('abcdefghijklmnopqrstuvwxyz')
+                insert_pos = random.randint(0, len(word_list))
+                word_list.insert(insert_pos, random_char)
+            
+            elif operation == 'delete':
+                # Delete a random non-whitespace character
+                delete_idx = random.choice(indicesNoBlancos)
+                del word_list[delete_idx]
+            
+            new_words.append(''.join(word_list))
+        else:
+            new_words.append(word)
+    
+    newRow = row.copy()
+    newRow['transcription'] = ' '.join(new_words)
+    rowsToAdd.append(newRow)
 
 def cambiarMorfemas(row, posTagsToAugment, rowsToAdd, dict1, prob=0.5):
     if pd.isnull(row['morpheme_break']) or pd.isnull(row['pos']) or pd.isnull(row['gloss_es']):
