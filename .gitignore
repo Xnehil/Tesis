@@ -10,3 +10,7 @@ __pycache__/
 *.npy
 *.vec
 *.model
+
+#Add everything inside O2_Pipeline/Embeddings
+!O2_Pipeline/Embeddings/*
+fasttext_bpe.model.wv.vectors_ngrams.npy
