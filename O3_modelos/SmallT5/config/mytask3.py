@@ -4,15 +4,15 @@ import t5.data
 from t5.data import preprocessors
 import tensorflow as tf
 TaskRegistry = seqio.TaskRegistry
-MixtureRegistry = seqio.MixtureRegistry
+MixtureRegistry = seqio.MixtureRegistry 
 
 
-vocab='../tokenizadorIskonawa.vocab'
+vocab='tokenizadorIskonawa.model'
 #vocab='/home/mulcar/roberta/slovene/transformers_epoch98/sentencepiece.bpe.model'
 #datasplit = {'train': '/home/mulcar/text-to-text-transfer-transformer/t5/mydata/sl_corpora_all.t5.train.tsv', 'validation': '/home/mulcar/text-to-text-transfer-transformer/t5/mydata/sl_corpora_all.t5.eval.tsv'}
 datasplit = {
-    "train": "../iskCorpus.t5.train.tsv",
-    "validation": "../iskCorpus.t5.eval.tsv"
+    "train": "iskCorpus.t5.train.tsv",
+    "validation": "iskCorpus.t5.eval.tsv"
 }
 
 DEFAULT_OUTPUT_FEATURES = {
