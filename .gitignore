@@ -14,3 +14,5 @@ __pycache__/
 #Add everything inside O2_Pipeline/Embeddings
 !O2_Pipeline/Embeddings/*
 fasttext_bpe.model.wv.vectors_ngrams.npy
+O3_modelos/checkpoints/checkpoint_last_lstm.pth
+O3_modelos/checkpoints/checkpoint112.pt
