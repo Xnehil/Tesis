@@ -21,3 +21,5 @@ tensorflow-2.13.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 libtpu.so
 O3_modelos/SmallT5/env
 O3_modelos/SmallT5/t5_isk_small
+/O3_modelos/checkpoints/checkpoint-10500
+/O3_modelos/checkpoints
