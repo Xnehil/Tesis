@@ -24,7 +24,8 @@ class Modelo(db.Model):
 class Ejemplo(db.Model):
     __tablename__ = 'ejemplo'
     id = db.Column(db.Integer, primary_key=True)
-    texto = db.Column(db.Text, nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    referencia = db.Column(db.Text, nullable=True) # Si es que se quiere mostrar el prompt o contexto
     lengua_id = db.Column(db.Integer, db.ForeignKey('lengua.id'), nullable=False)
     modelo_id = db.Column(db.Integer, db.ForeignKey('modelo.id'), nullable=False)
 
@@ -74,6 +75,11 @@ class Metrica(db.Model):
     __tablename__ = 'metrica'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String, nullable=False)
+    descripcion = db.Column(db.Text, nullable=True)
+    tipoValor = db.Column(db.String, nullable=False)  # "int", "float", "bool"
+    valorMin = db.Column(db.Float, nullable=True)
+    valorMax = db.Column(db.Float, nullable=True)
+    tooltip = db.Column(db.Text, nullable=False)
 
     puntuaciones = db.relationship('PuntuacionMetrica', backref='metrica', lazy=True)
 

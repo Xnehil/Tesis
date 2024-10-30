@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Experimento{% endblock %}
+
+{% block content %}
+<section class="container my-5">
+    <h1 class="display-5 text-center mb-4">Crear Nuevo Experimento</h1>
+    <form action="/submit-experimento" method="post" enctype="multipart/form-data">
+      <div class="row">
+        <!-- Left column: Datos Generales -->
+        <div class="col-md-6">
+          <h3>Datos Generales</h3>
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre del Experimento</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Ingrese el nombre del experimento" required>
+          </div>
+          <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea id="descripcion" name="descripcion" class="form-control" rows="5" placeholder="Describa el objetivo del experimento" required></textarea>
+          </div>
+        </div>
+        <!-- Right column: Subir Archivos -->
+        <div class="col-md-6">
+          <h3>Subir Archivos</h3>
+          <div class="mb-3">
+            <label for="archivo" class="form-label">Seleccione los archivos (.txt)</label>
+            <input type="file" id="archivo" name="archivos[]" class="form-control" accept=".txt" multiple required>
+          </div>
+          <div class="mb-3">
+            <p class="form-text">Ejemplo de cómo el archivo .txt debe ser proporcionado:</p>
+            <pre class="bg-light p-3">
+  Este es un ejemplo de contenido que debe estar dentro del archivo .txt.
+  Cada línea representa un dato que será procesado en el experimento.
+  Asegúrese de que el formato sea correcto.
+            </pre>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary btn-lg px-5">Crear Experimento</button>
+      </div>
+    </form>
+  </section>
+
+{% endblock %}
