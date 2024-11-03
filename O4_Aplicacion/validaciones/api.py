@@ -23,3 +23,16 @@ def validate_example():
     db.session.add(validation)
     db.session.commit()
     return jsonify({"message": "Validation recorded", "validation_id": validation.id})
+
+@api.route('/lenguas', methods=['GET'])
+def get_lenguas():
+    lenguas = Lengua.query.all()
+    return jsonify([lengua.serialize() for lengua in lenguas])
+
+@api.route('/lenguas', methods=['POST'])
+def add_lengua():
+    data = request.json
+    lengua = Lengua(name=data['name'])
+    db.session.add(lengua)
+    db.session.commit()
+    return jsonify({"message": "Language added", "language_id": lengua.id})

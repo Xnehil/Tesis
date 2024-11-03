@@ -1,66 +1,69 @@
-/* styles.css */
-
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
-  }
-  
-  
-  header {
-    background: linear-gradient(to right, #4b79a1, #283e51);
-    color: #fff;
-  }
-  
-  header h1 {
-    font-weight: 700;
-  }
-  
-  header p {
-    font-size: 1.25rem;
-  }
-  
-  section h2 {
-    font-weight: 700;
-    color: #333;
-  }
-  
-  section img {
-    max-width: 100%;
-    height: auto;
-    opacity: 0.9;
-  }
-  
+  background-color: #f5f7fa;
+}
 
-  
-
-body {
-  background-color: #f8f9fa;
+/* Navbar */
+.navbar {
+  background-color: #2f3640;
 }
 .navbar-brand {
+  color: #f5f6fa !important;
   font-weight: bold;
 }
-.form-section {
-  background-color: #fff;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+.navbar-toggler {
+  border-color: #f5f6fa;
 }
-.form-control:focus {
-  box-shadow: none;
-  border-color: #007bff;
+.navbar-toggler-icon {
+  color: #f5f6fa;
 }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #273c75 0%, #192a56 100%);
+  color: #f5f6fa;
+}
+.header h1,
+.header p {
+  color: #f5f6fa;
+}
+
+/* Buttons */
 .btn-primary {
-  background-color: #007bff;
-  border: none;
+  background-color: #e84118;
+  border-color: #e84118;
 }
 .btn-primary:hover {
-  background-color: #0069d9;
+  background-color: #c23616;
+  border-color: #c23616;
 }
+.btn-secondary {
+  background-color: #0097e6;
+  border-color: #0097e6;
+}
+.btn-secondary:hover {
+  background-color: #0082c8;
+  border-color: #0082c8;
+}
+
+/* Icons */
+.icon {
+  color: #e1b12c;
+}
+
+/* Footer */
 footer {
-  background-color: #343a40;
+  background-color: #2f3640;
+  color: #f5f6fa;
 }
 footer p {
   margin: 0;
-  color: #fff;
+}
+
+.accordion-item[data-completed="true"] .accordion-button {
+  background-color: #d4edda; /* Light green background */
+  color: #155724; /* Dark green text */
+}
+
+.accordion-item[data-completed="true"] .completed-icon {
+  display: inline; /* Show the completed icon */
 }

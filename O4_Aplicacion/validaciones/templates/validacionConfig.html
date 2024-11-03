@@ -1,0 +1,120 @@
+{% block validacion %}
+<div class="row mt-4">
+    <div class="col-md-8">
+      <h3>Validación</h3>
+      <div class="mb-3 gap-2">
+        <label for="metrics" class="form-label">Seleccione las métricas<span class="text-danger">*</span></label>
+        <div id="metrics" class="d-flex flex-column">
+          <div class="d-flex align-items-center mb-2">
+            <input class="form-check-input me-2" type="checkbox" value="accuracy" id="metric-accuracy" name="metrics[]">
+            <label class="form-check-label me-2 fixed-width-label" for="metric-fluidez">Fluidez</label>
+            <i class="fas fa-info-circle me-2" data-bs-toggle="tooltip" title="Fluidez: Mide la naturalidad y coherencia de las respuestas."></i>
+            <small class="text-muted ms-2">(Se mostrará al evaluador: <input type="range" class="form-range" min="1" max="5" step="1" value="3" disabled style="width: 100px;">)</small>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <input class="form-check-input me-2" type="checkbox" value="recall" id="metric-recall" name="metrics[]">
+            <label class="form-check-label me-2 fixed-width-label" for="metric-correctitud">Correctitud</label>
+            <i class="fas fa-info-circle me-2" data-bs-toggle="tooltip" title="Correctitud: Indica si el contenido es gramaticalmente correcto."></i>
+            <small class="text-muted ms-2">(Se mostrará al evaluador: <input type="range" class="form-range" min="1" max="5" step="1" value="3" disabled style="width: 100px;">)</small>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <input class="form-check-input me-2" type="checkbox" value="f1" id="metric-f1" name="metrics[]">
+            <label class="form-check-label me-2 fixed-width-label" for="metric-pertinencia">Pertinencia</label>
+            <i class="fas fa-info-circle me-2" data-bs-toggle="tooltip" title="Pertinencia: Indica si el contenido es relevante para el contexto."></i>
+            <small class="text-muted ms-2">(Se mostrará al evaluador: <input type="checkbox" class="form-check-input" disabled></small>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="custom-metric" class="form-label">Agregar métrica personalizada</label>
+        <div class="input-group mb-3">
+          <input type="text" id="custom-metric-name" class="form-control" placeholder="Nombre de la métrica">
+          <select id="custom-metric-type" class="form-select">
+            <option value="int">Entero</option>
+            <option value="float">Flotante</option>
+            <option value="boolean">Booleano</option>
+            <option value="text">Texto</option>
+          </select>
+          <input type="text" id="custom-metric-tooltip" class="form-control" placeholder="Tooltip de la métrica">
+          <input type="text" id="custom-metric-values" class="form-control" placeholder="Valores posibles (solo para int o float)" style="display: none;">
+          <button class="btn btn-outline-secondary" type="button" id="add-custom-metric">Agregar</button>
+        </div>
+        <div id="custom-metrics-list">
+          <!-- Se añadirán dinámicamente -->
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h3>Evaluadores</h3>
+      <div class="mb-3">
+        <label for="num-evaluators" class="form-label">Número de evaluadores <span class="text-danger">*</span></label>
+        <div class="d-flex flex-column">
+          <div class="d-flex flex-row mb-3">
+            <label for="num-native" class="form-label me-2">Nativos</label>
+            <input type="number" id="num-native" name="num_native" class="form-control" min="0" max="999" required>
+          </div>
+          <div class="d-flex flex-row mb-3">
+            <label for="num-experts" class="form-label me-2">Expertos</label>
+            <input type="number" id="num-experts" name="num_experts" class="form-control" min="0" max="999" required>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+    document.getElementById('num-native').addEventListener('input', function (e) {
+    let isANumber = /^\d+$/.test(this.value);
+    if (!isANumber) {
+        this.value = this.value.slice(0, -1);
+    } else if (parseInt(this.value) > 999) {
+        this.value = 999;
+    } else {
+        this.value = parseInt(this.value);
+    }
+    });
+
+    document.getElementById('num-experts').addEventListener('input', function (e) {
+    let isANumber = /^\d+$/.test(this.value);
+    if (!isANumber) {
+        this.value = this.value.slice(0, -1);
+    } else if (parseInt(this.value) > 999) {
+        this.value = 999;
+    } else {
+        this.value = parseInt(this.value);
+    }
+    });
+
+
+    document.getElementById('add-custom-metric').addEventListener('click', function() {
+      const name = document.getElementById('custom-metric-name').value;
+      const type = document.getElementById('custom-metric-type').value;
+      if (name) {
+        const customMetricsList = document.getElementById('custom-metrics-list');
+        const metricId = `custom-metric-${name.toLowerCase().replace(/\s+/g, '-')}`;
+        const metricHtml = `
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="${name}" id="${metricId}" name="custom_metrics[]" data-type="${type}">
+            <label class="form-check-label" for="${metricId}">${name} (${type})</label>
+          </div>
+        `;
+        customMetricsList.insertAdjacentHTML('beforeend', metricHtml);
+        document.getElementById('custom-metric-name').value = '';
+        document.getElementById('custom-metric-type').value = 'int';
+      }
+    });
+  </script>
+
+<style>
+    .tooltip-inner {
+      max-width: 300px; /* Adjust the width as needed */
+      width: 300px; /* Adjust the width as needed */
+    }
+    .fixed-width-label {
+  width: 6rem; /* Adjust the width as needed */
+}
+  </style>
+{% endblock %}
