@@ -3,9 +3,10 @@ block content %}
 <section class="container my-5">
     <h1 class="display-5 text-center mb-4">Crear Nuevo Experimento</h1>
     <form
-        action="/submit-experimento"
+        action="/api/crear-experimento"
         method="post"
         enctype="multipart/form-data"
+        id = "experiment-form"
     >
         <div class="accordion" id="experimentAccordion">
             <!-- Datos Generales -->
@@ -33,7 +34,7 @@ block content %}
                 >
                     <div class="accordion-body">
                         <div class="mb-3">
-                            <label for="nombre" class="form-label"
+                            <label for="nombre" class="form-label strong"
                                 >Nombre del Experimento<span class="text-danger">*</span></label
                             >
                             <input
@@ -67,7 +68,7 @@ block content %}
                                 name="language"
                                 class="form-control"
                                 required
-                                hx-get="/lenguas"
+                                hx-get="/api/lenguas?html=true"
                                 hx-trigger="load"
                                 hx-target="#language"
                                 hx-swap="innerHTML"
@@ -159,8 +160,42 @@ block content %}
             </button>
         </div>
     </form>
+
+    <div id="loading-screen" style="display: none;">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Creando experimento...</span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('experiment-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            document.getElementById('loading-screen').style.display = 'block'; // Show the loading screen
+
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: this.method,
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === "Experimento creado exitosamente") {
+                    window.location.href = "/experimento-creado";
+                } else {
+                    alert("Error: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while creating the experiment.");
+            })
+            .finally(() => {
+                document.getElementById('loading-screen').style.display = 'none'; // Hide the loading screen
+            });
+        });
+    </script>
 </section>
 <script src="{{ url_for('static', filename='js/files.js') }}"></script>
-<script src="{{ url_for('static', filename='js/acordion.js') }}">
-</script>
+<script src="{{ url_for('static', filename='js/acordion.js') }}"></script>
 {% endblock %}

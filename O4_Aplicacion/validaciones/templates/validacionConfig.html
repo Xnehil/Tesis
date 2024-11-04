@@ -6,19 +6,19 @@
         <label for="metrics" class="form-label">Seleccione las métricas<span class="text-danger">*</span></label>
         <div id="metrics" class="d-flex flex-column">
           <div class="d-flex align-items-center mb-2">
-            <input class="form-check-input me-2" type="checkbox" value="accuracy" id="metric-accuracy" name="metrics[]">
+            <input class="form-check-input me-2" type="checkbox" value="1" id="metric-accuracy" name="metrics[]">
             <label class="form-check-label me-2 fixed-width-label" for="metric-fluidez">Fluidez</label>
             <i class="fas fa-info-circle me-2" data-bs-toggle="tooltip" title="Fluidez: Mide la naturalidad y coherencia de las respuestas."></i>
             <small class="text-muted ms-2">(Se mostrará al evaluador: <input type="range" class="form-range" min="1" max="5" step="1" value="3" disabled style="width: 100px;">)</small>
           </div>
           <div class="d-flex align-items-center mb-2">
-            <input class="form-check-input me-2" type="checkbox" value="recall" id="metric-recall" name="metrics[]">
+            <input class="form-check-input me-2" type="checkbox" value="2" id="metric-recall" name="metrics[]">
             <label class="form-check-label me-2 fixed-width-label" for="metric-correctitud">Correctitud</label>
             <i class="fas fa-info-circle me-2" data-bs-toggle="tooltip" title="Correctitud: Indica si el contenido es gramaticalmente correcto."></i>
             <small class="text-muted ms-2">(Se mostrará al evaluador: <input type="range" class="form-range" min="1" max="5" step="1" value="3" disabled style="width: 100px;">)</small>
           </div>
           <div class="d-flex align-items-center mb-2">
-            <input class="form-check-input me-2" type="checkbox" value="f1" id="metric-f1" name="metrics[]">
+            <input class="form-check-input me-2" type="checkbox" value="3" id="metric-f1" name="metrics[]">
             <label class="form-check-label me-2 fixed-width-label" for="metric-pertinencia">Pertinencia</label>
             <i class="fas fa-info-circle me-2" data-bs-toggle="tooltip" title="Pertinencia: Indica si el contenido es relevante para el contexto."></i>
             <small class="text-muted ms-2">(Se mostrará al evaluador: <input type="checkbox" class="form-check-input" disabled></small>
@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="mb-3">
-        <label for="custom-metric" class="form-label">Agregar métrica personalizada</label>
+        <label for="custom-metric" class="form-label">Agregar métrica personalizada (Aún no funcional)</label>
         <div class="input-group mb-3">
           <input type="text" id="custom-metric-name" class="form-control" placeholder="Nombre de la métrica">
           <select id="custom-metric-type" class="form-select">

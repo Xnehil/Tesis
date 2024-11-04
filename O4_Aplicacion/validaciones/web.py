@@ -10,3 +10,7 @@ def home():
 @web.route('/crear-experimento')
 def crear_experimento():
     return render_template('crear-experimento.html')
+
+@web.route('/experimento-creado')
+def experimento_creado():
+    return render_template('experimento-creado.html')

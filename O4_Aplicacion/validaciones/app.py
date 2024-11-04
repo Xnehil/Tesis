@@ -5,6 +5,7 @@ from models import db
 from api import api  # Import the api blueprint
 from web import web  # Import the web blueprint
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -20,6 +21,8 @@ def create_app():
         db.create_all()
     
     return app
+
+
 
 app = create_app()
 

@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block title %}Experimento creado{% endblock %} {%
+    block content %}
+    <section class="container my-5">
+        <div class="text-center">
+            <h1 class="display-5 mb-4">¡Experimento Creado Exitosamente!</h1>
+            <p class="lead">El experimento ha sido creado y está listo para ser utilizado.</p>
+            <p>Puede ver los detalles del experimento o regresar al panel de control.</p>
+            <div class="mt-4">
+                <a href="/detalles-experimento/{{ experimento_id }}" class="btn btn-primary">Ver Detalles del Experimento</a>
+                <a href="/dashboard" class="btn btn-secondary">Regresar al Panel de Control</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
