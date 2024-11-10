@@ -4,6 +4,7 @@ from models import db, Lengua, Modelo, Ejemplo, Experimento, Experimento_X_Ejemp
 import random 
 import uuid
 
+
 api = Blueprint('api', __name__, url_prefix='/api')  # Prefix all routes with /api
 
 @api.route('/crear-experimento', methods=['POST'])
@@ -43,7 +44,8 @@ def crear_experimento():
         modelos = []
         for archivo in archivos:
             modelo = Modelo(
-                nombre=archivo.filename
+                nombre=archivo.filename.split('.')[0],
+                experimento_id=experimento.id
             )
             db.session.add(modelo)
             modelos.append(modelo)
@@ -104,7 +106,7 @@ def crear_experimento():
         db.session.bulk_save_objects(validadores)
         print(f"Validadores guardados")
         db.session.commit()
-        return jsonify({"message": "Experimento creado exitosamente"}), 201
+        return jsonify({"message": "Experimento creado exitosamente", "experimento_cod": experimento.codigo}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
@@ -185,3 +187,10 @@ def update_metrica(metrica_id):
     metrica.tooltip = data.get('tooltip', metrica.tooltip)
     db.session.commit()
     return jsonify({"message": "Metric updated"})
+
+@api.route('/experimento/<string:experimento_cod>', methods=['GET'])
+def get_experimento(experimento_cod):
+    experimento = Experimento.query.filter_by(codigo=experimento_cod).first()
+    if not experimento:
+        return jsonify({"message": "Experiment not found"}), 404
+    return jsonify(experimento.serialize())

@@ -32,6 +32,18 @@ class Modelo(db.Model):
     ejemplos = db.relationship('Ejemplo', backref='modelo', lazy=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
+    # Relación con experimento
+    experimento_id = db.Column(db.Integer, db.ForeignKey('experimento.id'), nullable=False)
+
+    def serialize(self, include_ejemplos=False):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'endpoint': self.endpoint,
+            'activo': self.activo,
+            'ejemplos': [ejemplo.serialize() for ejemplo in self.ejemplos] if include_ejemplos else None
+        }
+
 class Ejemplo(db.Model):
     __tablename__ = 'ejemplo'
     id = db.Column(db.Integer, primary_key=True)
@@ -40,6 +52,16 @@ class Ejemplo(db.Model):
     lengua_id = db.Column(db.Integer, db.ForeignKey('lengua.id'), nullable=False)
     modelo_id = db.Column(db.Integer, db.ForeignKey('modelo.id'), nullable=False)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+
+    def serialize(self, include_lengua=False, include_modelo=False):
+        return {
+            'id': self.id,
+            'contenido': self.contenido,
+            'referencia': self.referencia,
+            'lengua': self.lengua.serialize() if include_lengua else None,
+            'modelo': self.modelo.serialize() if include_modelo else None,
+            'activo': self.activo
+        }
 
 class Experimento(db.Model):
     __tablename__ = 'experimento'
@@ -55,9 +77,27 @@ class Experimento(db.Model):
     # Relationships
     lengua = db.relationship('Lengua', backref='experimentos')
     ejemplos = db.relationship('Experimento_X_Ejemplo', backref='experimento', lazy=True)
-    validaciones = db.relationship('Validacion', backref='experimento', lazy=True)
+    modelos = db.relationship('Modelo', backref='experimento', lazy=True)
+    validadores = db.relationship('Validador', backref='experimento', lazy=True)
     metricas = db.relationship('Metrica', secondary='experimento_metrica', lazy='subquery',
                                  backref=db.backref('experimentos', lazy=True))
+    
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'codigo': self.codigo,
+            'nombre': self.nombre,
+            'descripcion': self.descripcion,
+            'lengua': self.lengua.serialize() if self.lengua else None,
+            'num_expertos': self.num_expertos,
+            'num_nativos': self.num_nativos,
+            'activo': self.activo,
+            'metricas': [metrica.serialize() for metrica in self.metricas],
+            # 'ejemplos': [ejemplo.serialize() for ejemplo in self.ejemplos],
+            'validadores': [validador.serialize() for validador in self.validadores],
+            'modelos': [modelo.serialize(include_ejemplos=True) for modelo in self.modelos]
+        }
 
 class Metrica(db.Model):
     __tablename__ = 'metrica'
@@ -98,17 +138,40 @@ class Experimento_X_Ejemplo(db.Model):
     ejemplo = db.relationship('Ejemplo')
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'experimento_id': self.experimento_id,
+            'ejemplo': self.ejemplo.serialize(),
+            'activo': self.activo
+        }
+
+
 
 class Validador(db.Model):
     __tablename__ = 'validador'
     id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String, nullable=True)
+    contacto = db.Column(db.String, nullable=True)
     url = db.Column(db.String, nullable=False)
     tipo = db.Column(db.String, nullable=False)
     experimento_id = db.Column(db.Integer, db.ForeignKey('experimento.id'), nullable=False)
+    # experimento = db.relationship('Experimento', backref='validadores', lazy=True)
 
     # Progress tracking
     validaciones = db.relationship('Validacion', backref='validador', lazy=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+
+    def serialize(self, include_validaciones=False):
+        return {
+            'id': self.id,
+            'url': self.url,
+            'nombre': self.nombre,
+            'contacto': self.contacto,
+            'tipo': self.tipo,
+            'activo': self.activo,
+            'validaciones': [validacion.serialize() for validacion in self.validaciones] if include_validaciones else None
+        }
 
 
 class Validacion(db.Model):

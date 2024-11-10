@@ -27,3 +27,4 @@ O3_modelos/SmallT5/t5_isk_small
 !O3_modelos/XNLG/data
 
 O4_Aplicacion/validaciones/.venv
+*.db

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Experimento creado{% endblock %}
+
+{% block content %}
+<section class="container my-5">
+    {% if request.args.get('from') == 'crear-experimento' %}
+    <div class="text-center">
+        <h1 class="display-5 mb-4">¡Experimento Creado Exitosamente!</h1>
+        <p class="lead">El experimento ha sido creado y está listo para ser utilizado.</p>
+        <p>Puede ver los detalles del experimento e invitar a tus validadores a continuación.</p>
+    </div>
+    {% endif %}
+    <div class="experiment-details mt-5">
+        <div class="container">
+            <div class="row">
+                <!-- General Details Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h3>Detalles generales del experimento</h3>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Código del experimento:</strong> {{ experimento.codigo }}</p>
+                            <p><strong>Nombre del experimento:</strong> {{ experimento.nombre }}</p>
+                            <p><strong>Descripción:</strong> {{ experimento.descripcion }}</p>
+                            <p><strong>Lengua a evaluar:</strong> {{ experimento.lengua.nombre }} - {{ experimento.lengua.glottocode }}</p>
+                            <p><strong>Número de expertos:</strong> {{ experimento.num_expertos }}</p>
+                            <p><strong>Número de nativos:</strong> {{ experimento.num_nativos }}</p>
+                            <p><strong>Métricas:</strong></p>
+                            <ul class="list-group">
+                                    {% for metrica in experimento.metricas %}
+                                    <li class="list-group-item" style="cursor: help;"
+                                    data-toggle="tooltip" data-placement="top" title="{{ metrica.descripcion }}">
+                                        {{ metrica.nombre }}
+                                    </li>
+                                    {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="col">
+                    <div class="card mb-4 h-auto">
+                        <div class="card-header bg-secondary text-white">
+                            <h3>Modelos</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for modelo in experimento.modelos %}
+                                    <li class="list-group-item">
+                                        <strong>{{ modelo.nombre }}</strong> 
+                                        <span class="badge bg-primary">{{ modelo.ejemplos | length }} ejemplos</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+
+                    <div class="card h-auto">
+                        <div class="card-header bg-secondary text-white">
+                            <h3>Validadores</h3>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for validador in experimento.validadores %}
+                                <li class="list-group-item">
+                                    <form method="post" action="/update_validador/{{ validador.id }}" oninput="this.submit()">
+                                        <strong> {{ 'Experto' if validador.tipo == 'expert' else 'Nativo' }} </strong>
+                                        <div class="row">
+                                            <div class="form-group col-md-4">
+                                                <label for="nombre-{{ validador.id }}" class="mr-2">Nombre:</label>
+                                                <input type="text" class="form-control" id="nombre-{{ validador.id }}" name="nombre" value="{{ ' ' if validador.nombre == None }}">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="contacto-{{ validador.id }}" class="mr-2">Contacto:</label>
+                                                <input type="text" class="form-control" id="contacto-{{ validador.id }}" name="contacto" value="{{ ' ' if validador.contacto == None }}">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="url-{{ validador.id }}" class="mr-2">Enlace de invitación:</label>
+                                                <button type="button" class="btn btn-link" onclick="copyToClipboard('{{ validador.url }}')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="progreso-{{ validador.id }}" class="mr-2">Progreso:</label>
+                                            <div class="progress">
+                                                <div id="progress-bar-{{ validador.id }}" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                                    0%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>  
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Progreso de Validadores</h3>
+            </div>
+            <div class="card-body">
+                <div class="progress">
+                    <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Button -->
+        <div class="text-center mt-4">
+            <a href="/download-results/{{ experimento.id }}" class="btn btn-success">Descargar resultados del experimento</a>
+        </div>
+    </div>
+</section>
+<script>
+    window.experimento = {{ experimento | tojson | safe }};
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

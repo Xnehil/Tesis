@@ -181,7 +181,8 @@ block content %}
             .then(response => response.json())
             .then(data => {
                 if (data.message === "Experimento creado exitosamente") {
-                    window.location.href = "/experimento-creado";
+                    console.log(data);
+                    window.location.href = `/experimento-creado?from=crear-experimento&experimento_cod=${data.experimento_cod}`;
                 } else {
                     alert("Error: " + data.message);
                 }
