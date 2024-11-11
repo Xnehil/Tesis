@@ -21,3 +21,7 @@ def experimento_creado():
         return render_template('error.html', message="Experiment not found"), 404
     # print(experimento)
     return render_template('experimento-creado.html.j2', experimento=experimento.serialize())
+
+@web.route('/unirse-experimento')
+def unirse_experimento():
+    return render_template('unirse-experimento.html')

@@ -194,3 +194,17 @@ def get_experimento(experimento_cod):
     if not experimento:
         return jsonify({"message": "Experiment not found"}), 404
     return jsonify(experimento.serialize())
+
+@api.route('/validador/<string:validador_id>', methods=['PUT', 'POST'])
+def update_validador(validador_id):
+    try:
+        data = request.json
+        validador = Validador.query.get_or_404(validador_id)
+        validador.url = data.get('url', validador.url)
+        validador.activo = data.get('activo', validador.activo)
+        validador.nombre = data.get('nombre', validador.nombre)
+        validador.contacto = data.get('contacto', validador.contacto)
+        db.session.commit()
+        return jsonify({"message": "Validador updated"})
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
