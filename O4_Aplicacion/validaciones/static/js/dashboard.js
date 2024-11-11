@@ -38,7 +38,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
+    // Seleccionar todo el texto antes del primer / de la ruta actual
+    const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    // Construct the full URL
+    const fullUrl = `${baseUrl}/validar/${text}`;
+
+    navigator.clipboard.writeText(fullUrl).then(function() {
         showToast('URL copiada al portapapeles', 'black');
     }, function(err) {
         showToast('No se pudo copiar el texto: ' + err, 'danger');

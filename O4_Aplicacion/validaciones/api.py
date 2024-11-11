@@ -195,6 +195,11 @@ def get_experimento(experimento_cod):
         return jsonify({"message": "Experiment not found"}), 404
     return jsonify(experimento.serialize())
 
+@api.route('/experimentos', methods=['GET'])
+def get_experimentos():
+    experimentos = Experimento.query.all()
+    return jsonify([experimento.serialize() for experimento in experimentos])
+
 @api.route('/validador/<string:validador_id>', methods=['PUT', 'POST'])
 def update_validador(validador_id):
     try:
@@ -208,3 +213,4 @@ def update_validador(validador_id):
         return jsonify({"message": "Validador updated"})
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+    

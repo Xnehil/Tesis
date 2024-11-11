@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Validar Experimento{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Bienvenido al Experimento</h1>
+    <div class="card" id="welcome-card">
+        <div class="card-body text-center">
+            <p>Bienvenido, {{ validador.nombre }}. Gracias por participar en este experimento.</p>
+            <p>Haga clic en el botón de abajo para comenzar a validar.</p>
+            <p><strong>Ejemplo:</strong></p>
+            <div class="example-content">
+                <!-- Add your example content here -->
+                <p>Este es un ejemplo de cómo se verá la validación.</p>
+            </div>
+            <button class="btn btn-primary" onclick="showValidation()">Comenzar a validar</button>
+        </div>
+    </div>
+    
+    <!-- Validation Details -->
+    <h1 class="mb-4">Detalles del Validador</h1>
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h3>{{ 'Experto' if validador.tipo == 'expert' else 'Nativo' }}</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Nombre:</strong> {{ validador.nombre }}</p>
+            <p><strong>Contacto:</strong> {{ validador.contacto }}</p>
+            <p><strong>URL de invitación:</strong> <a href="{{ validador.url }}">{{ validador.url }}</a></p>
+            <p><strong>Progreso:</strong></p>
+            <div class="progress">
+                <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+            </div>
+            <button class="btn btn-success mt-3" onclick="showValidation()">Continuar validación</button>
+        </div>
+    </div>
+    
+</div>
+
+<script src="{{ url_for('static', filename='js/validar.js') }}"></script>
+{% endblock %}

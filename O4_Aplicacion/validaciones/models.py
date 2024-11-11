@@ -1,6 +1,6 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
-# from flask_migrate import Migrate
+from sqlalchemy import JSON
 
 db = SQLAlchemy()
 # migrate = Migrate()
@@ -78,7 +78,7 @@ class Experimento(db.Model):
     lengua = db.relationship('Lengua', backref='experimentos')
     ejemplos = db.relationship('Experimento_X_Ejemplo', backref='experimento', lazy=True)
     modelos = db.relationship('Modelo', backref='experimento', lazy=True)
-    validadores = db.relationship('Validador', backref='experimento', lazy=True)
+    validadores = db.relationship('Validador', backref='experimento_rel', lazy=True)
     metricas = db.relationship('Metrica', secondary='experimento_metrica', lazy='subquery',
                                  backref=db.backref('experimentos', lazy=True))
     
@@ -156,13 +156,13 @@ class Validador(db.Model):
     url = db.Column(db.String, nullable=False)
     tipo = db.Column(db.String, nullable=False)
     experimento_id = db.Column(db.Integer, db.ForeignKey('experimento.id'), nullable=False)
-    # experimento = db.relationship('Experimento', backref='validadores', lazy=True)
+    experimento = db.relationship('Experimento', backref='validadores_rel', lazy=True)
 
     # Progress tracking
     validaciones = db.relationship('Validacion', backref='validador', lazy=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
-    def serialize(self, include_validaciones=False):
+    def serialize(self, include_validaciones=False, include_experimento=False):
         return {
             'id': self.id,
             'url': self.url,
@@ -170,6 +170,7 @@ class Validador(db.Model):
             'contacto': self.contacto,
             'tipo': self.tipo,
             'activo': self.activo,
+            'experimento': self.experimento.serialize() if include_experimento else None,
             'validaciones': [validacion.serialize() for validacion in self.validaciones] if include_validaciones else None
         }
 
@@ -181,15 +182,31 @@ class Validacion(db.Model):
     experimento_id = db.Column(db.Integer, db.ForeignKey('experimento.id'), nullable=False)
     validador_id = db.Column(db.Integer, db.ForeignKey('validador.id'), nullable=False)
 
+    terminado = db.Column(db.Boolean, nullable=False, default=False)
     puntuaciones = db.relationship('PuntuacionMetrica', backref='validacion', lazy=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+
+    def serialize(self, include_puntuaciones=False):
+        return {
+            'id': self.id,
+            'ejemplo': self.ejemplo.serialize(),
+            'activo': self.activo,
+            'puntuaciones': [puntuacion.serialize() for puntuacion in self.puntuaciones] if include_puntuaciones else None
+        }
 
 
 
 class PuntuacionMetrica(db.Model):
     __tablename__ = 'puntuacion_metrica'
     id = db.Column(db.Integer, primary_key=True)
-    valor = db.Column(db.Integer, nullable=False)  # Score from the evaluator
+    valor = db.Column(JSON, nullable=False)
     validacion_id = db.Column(db.Integer, db.ForeignKey('validacion.id'), nullable=False)
     metrica_id = db.Column(db.Integer, db.ForeignKey('metrica.id'), nullable=False)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'valor': self.valor,
+            'activo': self.activo
+        }
