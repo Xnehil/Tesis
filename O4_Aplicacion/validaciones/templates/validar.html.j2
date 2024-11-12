@@ -3,40 +3,42 @@
 {% block title %}Validar Experimento{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Bienvenido al Experimento</h1>
-    <div class="card" id="welcome-card">
-        <div class="card-body text-center">
-            <p>Bienvenido, {{ validador.nombre }}. Gracias por participar en este experimento.</p>
-            <p>Haga clic en el botón de abajo para comenzar a validar.</p>
-            <p><strong>Ejemplo:</strong></p>
-            <div class="example-content">
-                <!-- Add your example content here -->
-                <p>Este es un ejemplo de cómo se verá la validación.</p>
-            </div>
-            <button class="btn btn-primary" onclick="showValidation()">Comenzar a validar</button>
+<div class="container mt-2">
+    <div id="welcome-card" class="p-4" style="display: none;">
+        <div class="text-center">
+            <p style="font-size: 1.2em; color: #333;">Bienvenido, <strong>{{ validador.nombre }}</strong>. Gracias por
+                participar en este experimento.</p>
         </div>
     </div>
-    
-    <!-- Validation Details -->
-    <h1 class="mb-4">Detalles del Validador</h1>
+
+    <div id="evaluation-instructions" class="mb-4">
+    <h3>Evaluación de ejemplo:</h3>
+    <p>Por favor, lea el contenido a continuación y evalúe las métricas presentadas. Siga las instrucciones y asegúrese de proporcionar una evaluación precisa. A continuación se muestra un ejemplo de evaluación:</p>
+    <ol>
+        <li>Lea el contenido proporcionado.</li>
+        <li>Revise cada métrica presentada.</li>
+        <li>Seleccione la opción adecuada para cada métrica.</li>
+        <li>Haga clic en "Comenzar a validar" para iniciar la evaluación.</li>
+    </ol>
+</div>
     <div class="card">
-        <div class="card-header bg-secondary text-white">
-            <h3>{{ 'Experto' if validador.tipo == 'expert' else 'Nativo' }}</h3>
+        <div class="pt-3 px-3" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.25rem;">
+            <h4>Lengua a evaluar:</h4>
+            <p>{{ validador.experimento.lengua.nombre }} - {{ validador.experimento.lengua.glottocode }}</p>
         </div>
-        <div class="card-body">
-            <p><strong>Nombre:</strong> {{ validador.nombre }}</p>
-            <p><strong>Contacto:</strong> {{ validador.contacto }}</p>
-            <p><strong>URL de invitación:</strong> <a href="{{ validador.url }}">{{ validador.url }}</a></p>
-            <p><strong>Progreso:</strong></p>
-            <div class="progress">
-                <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-            </div>
-            <button class="btn btn-success mt-3" onclick="showValidation()">Continuar validación</button>
-        </div>
+        {% include 'evaluacion-card.html.j2' %}
     </div>
-    
+
+    <button id="start-validation" class="btn btn-primary mt-3 w-100" onclick="showValidation()">Comenzar a validar</button>
+
+    <div class="progress mt-4">
+        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/validar.js') }}"></script>
+<script>
+    // Log validador object to console
+    const validador = {{ validador | tojson }};
+</script>
 {% endblock %}

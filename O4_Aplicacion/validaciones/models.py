@@ -185,6 +185,7 @@ class Validacion(db.Model):
     terminado = db.Column(db.Boolean, nullable=False, default=False)
     puntuaciones = db.relationship('PuntuacionMetrica', backref='validacion', lazy=True)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+    ejemplo = db.relationship('Ejemplo', backref='validaciones', lazy=True)
 
     def serialize(self, include_puntuaciones=False):
         return {

@@ -30,4 +30,4 @@ def validar(validador_cod):
     validador = Validador.query.filter_by(url=validador_cod).first()
     if not validador:
         return render_template('error.html', message="Experiment not found"), 404
-    return render_template('validar.html.j2', validador=validador.serialize())
+    return render_template('validar.html.j2', validador=validador.serialize(include_validaciones=True, include_experimento=True))

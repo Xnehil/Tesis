@@ -1,6 +1,6 @@
 # api.py
 from flask import Blueprint, request, jsonify, render_template
-from models import db, Lengua, Modelo, Ejemplo, Experimento, Experimento_X_Ejemplo, Metrica, Validacion, Validador
+from models import db, Lengua, Modelo, Ejemplo, Experimento, Experimento_X_Ejemplo, Metrica, Validacion, Validador, PuntuacionMetrica
 import random 
 import uuid
 
@@ -103,14 +103,40 @@ def crear_experimento():
                 url = str(uuid.uuid4())
             )
             validadores.append(validador)
-        db.session.bulk_save_objects(validadores)
+        db.session.add_all(validadores)
         print(f"Validadores guardados")
         db.session.commit()
+        for validador in validadores:
+            for ejemplo in ejemplos:
+                crear_validacion(validador, experimento, ejemplo, experimento.metricas, crearPuntuaciones=True)
+        print(f"Validaciones creadas")
         return jsonify({"message": "Experimento creado exitosamente", "experimento_cod": experimento.codigo}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
 
+
+def crear_validacion(validador, experimento, ejemplo, metricas, crearPuntuaciones=False):
+    print(f"Creando validacion para {validador.id} - {experimento.id} - {ejemplo.id}")
+    validacion = Validacion(
+        validador_id=validador.id,
+        experimento_id=experimento.id,
+        ejemplo_id=ejemplo.id
+    )
+    db.session.add(validacion)
+    db.session.commit()
+    if crearPuntuaciones:
+        puntuaciones = []
+        for metrica in metricas:
+            puntuacion = PuntuacionMetrica(
+                validacion_id=validacion.id,
+                metrica_id=metrica.id,
+                valor=None
+            )
+            puntuaciones.append(puntuacion)
+        db.session.bulk_save_objects(puntuaciones)
+        db.session.commit()
+    return validacion
 
 @api.route('/lenguas', methods=['GET'])
 def get_lenguas():
