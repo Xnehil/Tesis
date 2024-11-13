@@ -171,7 +171,7 @@ class Validador(db.Model):
             'tipo': self.tipo,
             'activo': self.activo,
             'experimento': self.experimento.serialize() if include_experimento else None,
-            'validaciones': [validacion.serialize() for validacion in self.validaciones] if include_validaciones else None
+            'validaciones': [validacion.serialize(include_puntuaciones=True) for validacion in self.validaciones] if include_validaciones else None
         }
 
 
@@ -192,6 +192,7 @@ class Validacion(db.Model):
             'id': self.id,
             'ejemplo': self.ejemplo.serialize(),
             'activo': self.activo,
+            'terminado': self.terminado,
             'puntuaciones': [puntuacion.serialize() for puntuacion in self.puntuaciones] if include_puntuaciones else None
         }
 
@@ -209,5 +210,6 @@ class PuntuacionMetrica(db.Model):
         return {
             'id': self.id,
             'valor': self.valor,
-            'activo': self.activo
+            'activo': self.activo,
+            'metrica_id': self.metrica_id
         }

@@ -240,3 +240,32 @@ def update_validador(validador_id):
     except Exception as e:
         return jsonify({"message": str(e)}), 500
     
+@api.route('/validacion/<string:validacion_id>', methods=['PUT', 'POST'])
+def update_validacion(validacion_id):
+    try:
+        data = request.json
+        # print(data)
+        validacion = Validacion.query.get_or_404(validacion_id)
+    
+        validacion.terminado = data.get('terminado', validacion.terminado)
+        
+        puntuaciones = data.get('puntuaciones', [])
+        for metrica_data in puntuaciones:
+            puntuacion = PuntuacionMetrica.query.filter_by(
+                id = metrica_data['id'],
+            ).first()
+            
+            if puntuacion:
+                puntuacion.valor = metrica_data['valor']
+            else:
+                puntuacion = PuntuacionMetrica(
+                    valor=metrica_data['valor'],
+                    validacion_id=validacion.id,
+                    metrica_id=metrica_data['metrica_id']
+                )
+                db.session.add(puntuacion)
+        db.session.commit()
+        return jsonify({"message": "Validacion updated"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500

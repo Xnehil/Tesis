@@ -1,21 +1,24 @@
 <!-- evaluacion-card.html.j2 -->
-<div class="card-body">
-    <div class="row">
+<div class="card-body" id="evaluacion-card">
+    <div class="row" id="evaluacion-contenido">
+        <div class="col-12 mb-3 text-center">
+            <h4 id="titulo-numero-ejemplo">Viendo ejemplo 1 de 8</h4>
+        </div>
         <div class="col-md-6 mb-3">
-            <h4>Contenido a Evaluar:</h4>
+            <h4>Contenido a evaluar:</h4>
             <div class="border border-info p-3" id="contenido-evaluacion">
                 <p>Contenido no disponible.</p>
             </div>
         </div>
         <div class="col-md-6 mb-3">
-            <h4>Métricas a Evaluar:</h4>
+            <h4>Métricas a evaluar:</h4>
             <div class="border border-info p-3" id="metricas-evaluacion">
                 <p>Métricas no disponibles.</p>
             </div>
         </div>
     </div>
     <div id="botones-evaluacion">
-   <button class="btn btn-secondary btn-lg" onclick="previousEvaluation()">Anterior</button>
-        <button class="btn btn-success btn-lg" onclick="nextEvaluation()">Siguiente</button>
+   <button class="btn btn-secondary btn-lg w-25" onclick="previousEvaluation()">Anterior</button>
+        <button class="btn btn-success btn-lg w-25" onclick="nextEvaluation()">Siguiente</button>
     </div>
 </div>
