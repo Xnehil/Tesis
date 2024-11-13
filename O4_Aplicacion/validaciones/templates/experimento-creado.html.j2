@@ -76,21 +76,22 @@
         <!-- Progress Bar -->
         <div class="card mb-4">
             <div class="card-header">
-                <h3>Progreso de Validadores</h3>
+                <h3>Progreso de validadores</h3>
             </div>
             <div class="card-body">
                 <div class="progress">
                     <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
                 </div>
+                <div id="progress-text-main" class="progress-text text-center"></div>
             </div>
         </div>
 
         <!-- Download Button -->
         <div class="text-center mt-4">
-            <a href="/download-results/{{ experimento.id }}" class="btn btn-success bg-opacity-75">
+            <button id="download-button" class="btn btn-success bg-opacity-75">
                 <i class="fas fa-download"></i>
-            Descargar resultados del experimento
-            </a>
+                Descargar resultados del experimento
+            </button>
         </div>
     </div>
 </section>
@@ -101,4 +102,29 @@
     })
 </script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+document.getElementById('download-button').addEventListener('click', function() {
+    const experimentoCod = '{{ experimento.codigo }}';
+    fetch(`/api/generar-resultados/${experimentoCod}`)
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            } else {
+                throw new Error('Error generating file');
+            }
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `resultados_${experimentoCod}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+</script>
 {% endblock %}

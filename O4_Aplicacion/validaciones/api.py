@@ -1,8 +1,11 @@
 # api.py
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, make_response
 from models import db, Lengua, Modelo, Ejemplo, Experimento, Experimento_X_Ejemplo, Metrica, Validacion, Validador, PuntuacionMetrica
 import random 
 import uuid
+import math
+import io
+import csv
 
 
 api = Blueprint('api', __name__, url_prefix='/api')  # Prefix all routes with /api
@@ -59,7 +62,7 @@ def crear_experimento():
             lines = [line for line in lines if line.strip()]
             percentage = request.form.get(f'percentage_{i}')
             if percentage:
-                n = int(len(lines) * float(percentage) / 100)
+                n = math.ceil(len(lines) * float(percentage) / 100)
                 lines = random.sample(lines, n)
             for line in lines:
                 ejemplo = Ejemplo(
@@ -269,3 +272,38 @@ def update_validacion(validacion_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+    
+
+@api.route('/generar-resultados/<string:experimento_cod>', methods=['GET'])
+def generar_resultados(experimento_cod):
+    experimento = Experimento.query.filter_by(codigo=experimento_cod).first()
+    if not experimento:
+        return jsonify({"message": "Experiment not found"}), 404
+
+    validaciones = Validacion.query.filter_by(experimento_id=experimento.id).all()
+
+    # Create a CSV file in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['validador_id', 'validador_nombre', 'modelo_nombre', 'ejemplo_id','ejemplo_contenido', 'metrica_nombre', 'puntuacion_valor'])
+
+    for validacion in validaciones:
+        validador = validacion.validador
+        ejemplo = validacion.ejemplo
+        for puntuacion in validacion.puntuaciones:
+            metrica = puntuacion.metrica
+            writer.writerow([
+                validador.id,
+                validador.nombre,
+                ejemplo.modelo.nombre,
+                ejemplo.id,
+                ejemplo.contenido,
+                metrica.nombre,
+                puntuacion.valor
+            ])
+
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=resultados.csv'
+    response.headers['Content-type'] = 'text/csv'
+    return response

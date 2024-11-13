@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mostrarMensajeFinal();
     } else {
         let validacionActual = null 
-        if (numValidacion >= 0 && numValidacion < totalValidaciones) {
+        if (numValidacion > 0 && numValidacion < totalValidaciones) {
             validacionActual = validador.validaciones[numValidacion];
             showValidation(numValidacion);
         }
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function actualizarProgreso(progreso) {
     // Update progress bar
+    console.log('Actualizando progreso: ' + progreso);
     var progressBar = document.getElementById('progress-bar');
     progressBar.style.width = progreso + '%';
     progressBar.setAttribute('aria-valuenow', progreso);
@@ -59,6 +60,11 @@ function calcularProgreso() {
     return progreso;
 }
 
+function actualizarProgresoBarraYTexto() {
+    let progreso = calcularProgreso();
+    actualizarProgreso(progreso);
+    updateProgressText();
+}
 
 
 
@@ -124,13 +130,13 @@ function previousEvaluation() {
     if(numValidacion > 0){
         if (areAllMetricsCompleted()) {
             guardarPuntuaciones();
+            actualizarProgresoBarraYTexto();
         }
         numValidacion--;
         let validacionActual = validador.validaciones[numValidacion];
         updateEvaluation(validacionActual, validador.experimento.metricas);
     } else {
-        // Lanzar mensaje de que ya no hay más validaciones
-        alert("Esta es la primera validación.");
+        showAlert("Esta es la primera validación.");
     }
 }
 
@@ -140,15 +146,16 @@ function nextEvaluation() {
             guardarPuntuaciones();
             numValidacion++;
             let validacionActual = validador.validaciones[numValidacion];
+            actualizarProgresoBarraYTexto();
             updateEvaluation(validacionActual, validador.experimento.metricas);
         } else {
             guardarPuntuaciones();
-            updateProgressText();
+            actualizarProgresoBarraYTexto();
             mostrarMensajeFinal();
         }
     } else {
         // Lanzar mensaje de que todas las métricas deben ser completadas
-        alert("Por favor, complete todas las métricas antes de continuar.");
+        showAlert("Por favor, complete todas las métricas antes de continuar.");
     }
 }
 
@@ -236,7 +243,7 @@ function areAllMetricsCompleted() {
 
 function updateProgressText() {
     const progressText = document.getElementById('progress-text');
-    progressText.textContent = `${numValidacion + 1} de ${totalValidaciones}`;
+    progressText.textContent = `${numValidacion} de ${totalValidaciones}`;
 
     const progressText2 = document.getElementById('titulo-numero-ejemplo');
     if (numValidacion === totalValidaciones) {
@@ -277,4 +284,43 @@ function volverUltimaValidacion() {
     botonesDiv.innerHTML = botonesDiv.oldHTML;
     let validacionActual = validador.validaciones[numValidacion];
     updateEvaluation(validacionActual, validador.experimento.metricas);
+}
+
+function showAlert(message) {
+    // Remove existing alert if any
+    const existingAlert = document.getElementById('custom-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    // Create new alert
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'custom-alert';
+    alertDiv.className = 'alert alert-secondary alert-dismissible fade show';
+    alertDiv.role = 'alert';
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '50%';
+    alertDiv.style.left = '50%';
+    alertDiv.style.transform = 'translate(-50%, -50%)';
+    alertDiv.style.zIndex = '1050'; // Ensure it appears above other elements
+    alertDiv.style.padding = '1.5rem';
+    alertDiv.style.borderRadius = '10px';
+    alertDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+    alertDiv.style.backdropFilter = 'blur(10px)';
+    alertDiv.innerHTML = `
+        <div style="padding-right: 30px;">
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="position: absolute; top: 10px; right: 10px;"></button>
+    `;
+
+    // Insert alert into the DOM
+    document.body.appendChild(alertDiv);
+
+    // Automatically remove the alert after a few seconds
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        alertDiv.classList.add('fade');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 4000);
 }

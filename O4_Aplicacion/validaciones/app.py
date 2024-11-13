@@ -4,7 +4,7 @@ from config import Config
 from models import db
 from api import api  # Import the api blueprint
 from web import web  # Import the web blueprint
-
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -27,4 +27,4 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=int(os.environ.get("PORT", 5000)))

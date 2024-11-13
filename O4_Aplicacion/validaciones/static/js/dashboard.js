@@ -1,41 +1,39 @@
 
-
 document.addEventListener('DOMContentLoaded', function() {
     // Function to calculate and update the progress
-    function updateProgress() {
+    function updateProgress(progresoAcumulado) {
         const validadores = window.experimento.validadores;
         const totalValidadores = validadores.length;
-        let completedValidadores = 0;
 
-        validadores.forEach(validador => {
-            // Assuming each validador has a 'completed' property indicating their progress
-            if (validador.completed) {
-                completedValidadores++;
-            }
-        });
-
-        const progress = (completedValidadores / totalValidadores) * 100;
+        const progress = progresoAcumulado / totalValidadores;
         const progressBar = document.getElementById('progress-bar');
         progressBar.style.width = `${progress}%`;
         progressBar.setAttribute('aria-valuenow', progress);
         progressBar.textContent = `${progress.toFixed(2)}%`;
+
+        const progressText = document.getElementById('progress-text-main');
+        progressText.textContent = `El progreso de todos los validadores es de ${progress.toFixed(2)}%`;
     }
 
-    // Call the function to update the progress
-    console.log(window.experimento);
-    updateProgress();
-
+    let progresoAcumulado = 0;
     for (let validador of window.experimento.validadores) {
-        validador.progress = calculateProgress(); // Replace with your actual calculation logic
+        validador.progress = calculateProgress(validador);
+        progresoAcumulado += validador.progress;
         const progressBar = document.getElementById(`progress-bar-${validador.id}`);
         progressBar.style.width = `${validador.progress}%`;
         progressBar.setAttribute('aria-valuenow', validador.progress);
         progressBar.textContent = `${validador.progress}%`;
     }
 
+    // Call the function to update the progress
+    console.log(window.experimento);
+    updateProgress(progresoAcumulado);
+
     const toastElList = document.querySelectorAll('.toast')
     const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, option))
 });
+
+
 
 function copyToClipboard(text) {
     // Seleccionar todo el texto antes del primer / de la ruta actual
@@ -106,7 +104,10 @@ function updateSpan(validadorId, newValue) {
     span.textContent = `${tipo} - ${newValue || 'Sin nombre'}`;
 }
 
-function calculateProgress() {
-    // Replace this with your actual logic to calculate progress
-    return 50; // Example progress value
+function calculateProgress(validador) {
+    const totalValidaciones = validador.validaciones.length;
+    const completedValidaciones = validador.validaciones.filter(v => v.terminado).length;
+    const progreso = (completedValidaciones / totalValidaciones) * 100;
+    return progreso;
 }
+

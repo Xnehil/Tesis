@@ -53,13 +53,15 @@ class Ejemplo(db.Model):
     modelo_id = db.Column(db.Integer, db.ForeignKey('modelo.id'), nullable=False)
     activo = db.Column(db.Boolean, nullable=False, default=True)
 
+    # lengua = db.relationship('Lengua', backref='ejemplos')
+
     def serialize(self, include_lengua=False, include_modelo=False):
         return {
             'id': self.id,
             'contenido': self.contenido,
             'referencia': self.referencia,
             'lengua': self.lengua.serialize() if include_lengua else None,
-            'modelo': self.modelo.serialize() if include_modelo else None,
+            'modelo': self.modelo_rel.serialize() if include_modelo else None,
             'activo': self.activo
         }
 
@@ -95,7 +97,7 @@ class Experimento(db.Model):
             'activo': self.activo,
             'metricas': [metrica.serialize() for metrica in self.metricas],
             # 'ejemplos': [ejemplo.serialize() for ejemplo in self.ejemplos],
-            'validadores': [validador.serialize() for validador in self.validadores],
+            'validadores': [validador.serialize(include_validaciones=True) for validador in self.validadores],
             'modelos': [modelo.serialize(include_ejemplos=True) for modelo in self.modelos]
         }
 
@@ -156,7 +158,7 @@ class Validador(db.Model):
     url = db.Column(db.String, nullable=False)
     tipo = db.Column(db.String, nullable=False)
     experimento_id = db.Column(db.Integer, db.ForeignKey('experimento.id'), nullable=False)
-    experimento = db.relationship('Experimento', backref='validadores_rel', lazy=True)
+    experimento = db.relationship('Experimento', backref='validadores_rel', lazy=True, viewonly=True)
 
     # Progress tracking
     validaciones = db.relationship('Validacion', backref='validador', lazy=True)
