@@ -67,3 +67,26 @@ footer p {
 .accordion-item[data-completed="true"] .completed-icon {
   display: inline; /* Show the completed icon */
 }
+
+.tooltip {
+  background-color: white !important;
+  border: 1px solid #ccc;
+  opacity: 1 !important;
+}
+
+.tooltip-img {
+  max-width: 30rem; 
+  max-height: 30rem;
+}
+
+.tooltip-inner {
+  background-color: white !important;
+  color: black !important; 
+  /* border: 1px solid #ccc; */
+  opacity: 1 !important; 
+  max-width: 100%; 
+  padding: 10px;
+  text-align: center; 
+  overflow: hidden; /* Prevent overflowing content */
+}
+

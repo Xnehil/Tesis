@@ -41,9 +41,10 @@ document.getElementById('archivo').addEventListener('change', function(event) {
                 <div class="flex-grow-1 ms-2">
                     <label for="percentage-${currentFileIndex}" class="form-label mb-1">Porcentaje de líneas a validar:</label>
                     <div class="d-flex align-items-center">
-                        <input type="number" id="percentage-${currentFileIndex}" name="percentage_${currentFileIndex}" class="form-control form-control-sm me-2" min="0" max="100" value="5" step="0.1" required >
-                        <small class="form-text text-muted" id="percentage-indicator-${currentFileIndex}">${numLines} líneas</small>
-                    </div>
+                      <input type="range" id="percentage-slider-${currentFileIndex}" name="percentage_slider_${currentFileIndex}" class="form-range me-2" min="0" max="100" value="5" step="0.1" oninput="updatePercentageInput(${currentFileIndex})">
+                      <input type="number" id="percentage-${currentFileIndex}" name="percentage_${currentFileIndex}" class="form-control form-control-sm me-2" min="0" max="100" value="5" step="0.1" required oninput="updatePercentageSlider(${currentFileIndex})">
+                      <small class="form-text text-muted" id="percentage-indicator-${currentFileIndex}">${numLines} líneas</small>
+                  </div>
                 </div>
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" onclick="removeFile(this)">Eliminar</button>
@@ -65,8 +66,14 @@ document.getElementById('archivo').addEventListener('change', function(event) {
         this.value = percentage;
         const linesToValidate = Math.ceil((percentage / 100) * numLines);
         document.getElementById(`percentage-indicator-${currentFileIndex}`).innerText = `${percentage}% (${linesToValidate} líneas)`;
+        document.getElementById(`percentage-slider-${currentFileIndex}`).value = percentage;
       });
-
+      document.getElementById(`percentage-slider-${currentFileIndex}`).addEventListener('input', function() {
+        const percentage = this.value;
+        document.getElementById(`percentage-${currentFileIndex}`).value = percentage;
+        const linesToValidate = Math.ceil((percentage / 100) * numLines);
+        document.getElementById(`percentage-indicator-${currentFileIndex}`).innerText = `${percentage}% (${linesToValidate} líneas)`;
+    });
     };
     reader.readAsText(file);
   });
@@ -75,4 +82,16 @@ document.getElementById('archivo').addEventListener('change', function(event) {
 function removeFile(button) {
   const card = button.closest('.card');
   card.remove();
+}
+
+function updatePercentageInput(index) {
+  const slider = document.getElementById(`percentage-slider-${index}`);
+  const input = document.getElementById(`percentage-${index}`);
+  input.value = slider.value;
+}
+
+function updatePercentageSlider(index) {
+  const slider = document.getElementById(`percentage-slider-${index}`);
+  const input = document.getElementById(`percentage-${index}`);
+  slider.value = input.value;
 }

@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('welcome-card').style.display = 'none';
         document.getElementById('start-validation').style.display = 'none';
         document.getElementById('evaluation-instructions').style.display = 'none';
-        updateProgressText();
+        updateProgressText(progreso);
         mostrarMensajeFinal();
     } else {
         let validacionActual = null 
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showValidation(numValidacion);
         }
         updateEvaluation(validacionActual, validador.experimento.metricas);
-        updateProgressText();
+        updateProgressText(progreso);
     }
 });
 
@@ -60,10 +60,10 @@ function calcularProgreso() {
     return progreso;
 }
 
-function actualizarProgresoBarraYTexto() {
+function actualizarProgresoBarraYTexto(final=false) {
     let progreso = calcularProgreso();
     actualizarProgreso(progreso);
-    updateProgressText();
+    updateProgressText(progreso);
 }
 
 
@@ -86,6 +86,9 @@ function updateEvaluation(evaluacion, metricas) {
     }
 
     let metricasHtml = '';
+    if (!evaluacion) {
+        metricasHtml = '<p>Así se verán las métricas de la evaluación. Tendrás que completarlas todas antes de continuar.</p>';
+    }
     metricas.forEach(metrica => {
         // const puntuacion = evaluacion.puntuaciones.find(puntuacion => puntuacion.metrica === metrica.id);
         // const valor = puntuacion ? puntuacion.valor : metrica.valorMin;
@@ -95,7 +98,7 @@ function updateEvaluation(evaluacion, metricas) {
             valor = puntuacion ? puntuacion.valor : metrica.valorMin;
             // Convertir null a ''  
             if (valor === null) {
-                valor = '';
+                valor = metrica.valorMin;
             }
         } 
 
@@ -120,7 +123,6 @@ function updateEvaluation(evaluacion, metricas) {
             metricasHtml += `</div>`;
     });
     metricasDiv.innerHTML = metricasHtml;
-    updateProgressText();
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tooltipTriggerEl => {
         new bootstrap.Tooltip(tooltipTriggerEl);
     });
@@ -130,9 +132,9 @@ function previousEvaluation() {
     if(numValidacion > 0){
         if (areAllMetricsCompleted()) {
             guardarPuntuaciones();
-            actualizarProgresoBarraYTexto();
         }
         numValidacion--;
+        actualizarProgresoBarraYTexto();
         let validacionActual = validador.validaciones[numValidacion];
         updateEvaluation(validacionActual, validador.experimento.metricas);
     } else {
@@ -150,7 +152,7 @@ function nextEvaluation() {
             updateEvaluation(validacionActual, validador.experimento.metricas);
         } else {
             guardarPuntuaciones();
-            actualizarProgresoBarraYTexto();
+            actualizarProgresoBarraYTexto(final=true);
             mostrarMensajeFinal();
         }
     } else {
@@ -207,6 +209,7 @@ function guardarPuntuaciones(){
     }
     if (hasChanges) {
         validacionActual.terminado = true;
+        showLoadingOverlay();
         // Enviar validacion actualizada al servidor
         fetch(`/api/validacion/${validacionActual.id}`, {
             method: 'PUT',
@@ -216,6 +219,9 @@ function guardarPuntuaciones(){
             body: JSON.stringify(validacionActual)
         })
         .then(response => response.json())
+        .then(() => {
+            hideLoadingOverlay();
+        })
         .catch((error) => {
             console.error('Error:', error);
         });
@@ -241,9 +247,16 @@ function areAllMetricsCompleted() {
     return true;
 }
 
-function updateProgressText() {
+function updateProgressText(progreso) {
     const progressText = document.getElementById('progress-text');
-    progressText.textContent = `${numValidacion} de ${totalValidaciones}`;
+    console.log('updateProgressText');
+    if (progreso === 100) {
+        progressText.textContent = `Todas las validaciones completadas`;
+    } else {
+        console.log(progreso);
+        let completadas = Math.floor(progreso * totalValidaciones / 100);
+        progressText.textContent = `${completadas} de ${totalValidaciones}`;
+    }
 
     const progressText2 = document.getElementById('titulo-numero-ejemplo');
     if (numValidacion === totalValidaciones) {
@@ -283,6 +296,7 @@ function volverUltimaValidacion() {
     // console.log("numValidacion: " + numValidacion);
     botonesDiv.innerHTML = botonesDiv.oldHTML;
     let validacionActual = validador.validaciones[numValidacion];
+    updateProgressText(calcularProgreso());
     updateEvaluation(validacionActual, validador.experimento.metricas);
 }
 
@@ -323,4 +337,28 @@ function showAlert(message) {
         alertDiv.classList.add('fade');
         setTimeout(() => alertDiv.remove(), 150);
     }, 4000);
+}
+
+function showLoadingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+    overlay.style.zIndex = '9999';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.innerHTML = '<i class="fas fa-spinner fa-spin fa-3x text-primary"></i>';
+    document.body.appendChild(overlay);
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
 }

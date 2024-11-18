@@ -2,7 +2,15 @@
 <div class="card-body" id="evaluacion-card">
     <div class="row" id="evaluacion-contenido">
         <div class="col-12 mb-3 text-center">
-            <h4 id="titulo-numero-ejemplo">Viendo ejemplo 1 de 8</h4>
+            <h4 id="titulo-numero-ejemplo" style="display: inline;">Viendo ejemplo 1 de 8</h4>
+              <span 
+                data-bs-toggle="tooltip" 
+                data-bs-html="true" 
+                data-bs-placement="bottom" 
+                title="Completa así las evaluaciones:<br/>
+                <img src='{{ url_for('static', filename='validar.gif') }}' alt='Tutorial' class='tooltip-img'>">
+                <i class="fas fa-info-circle"></i>
+            </span>
         </div>
         <div class="col-md-6 mb-3">
             <h4>Contenido a evaluar:</h4>
