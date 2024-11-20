@@ -41,8 +41,8 @@ document.getElementById('archivo').addEventListener('change', function(event) {
                 <div class="flex-grow-1 ms-2">
                     <label for="percentage-${currentFileIndex}" class="form-label mb-1">Porcentaje de líneas a validar:</label>
                     <div class="d-flex align-items-center">
-                      <input type="range" id="percentage-slider-${currentFileIndex}" name="percentage_slider_${currentFileIndex}" class="form-range me-2" min="0" max="100" value="5" step="0.1" oninput="updatePercentageInput(${currentFileIndex})">
-                      <input type="number" id="percentage-${currentFileIndex}" name="percentage_${currentFileIndex}" class="form-control form-control-sm me-2" min="0" max="100" value="5" step="0.1" required oninput="updatePercentageSlider(${currentFileIndex})">
+                      <input type="range" id="percentage-slider-${currentFileIndex}" name="percentage_slider_${currentFileIndex}" class="form-range me-2" min="0" max="100" value="5" step="0.01" oninput="updatePercentageInput(${currentFileIndex})">
+                      <input type="number" id="percentage-${currentFileIndex}" name="percentage_${currentFileIndex}" class="form-control form-control-sm me-2" min="0" max="100" value="5" step="0.01" required oninput="updatePercentageSlider(${currentFileIndex})">
                       <small class="form-text text-muted" id="percentage-indicator-${currentFileIndex}">${numLines} líneas</small>
                   </div>
                 </div>
@@ -57,13 +57,11 @@ document.getElementById('archivo').addEventListener('change', function(event) {
         let percentage = this.value.replace(/[^0-9.,]/g, '');
         
         // Ensure the percentage remains within range and only has one decimal point
-        if (percentage > 100) {
-            percentage = 100;
-        } else if (percentage.includes('.') && percentage.split('.')[1].length > 1) {
-            percentage = parseFloat(percentage).toFixed(2); // Limit to one decimal
-        }
-        
+        percentage = parseFloat(percentage) || 0; 
+        percentage = Math.min(100, Math.max(0, percentage)); 
+        percentage = percentage.toFixed(2); 
         this.value = percentage;
+     
         const linesToValidate = Math.ceil((percentage / 100) * numLines);
         document.getElementById(`percentage-indicator-${currentFileIndex}`).innerText = `${percentage}% (${linesToValidate} líneas)`;
         document.getElementById(`percentage-slider-${currentFileIndex}`).value = percentage;

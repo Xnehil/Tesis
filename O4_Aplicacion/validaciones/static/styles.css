@@ -70,18 +70,18 @@ footer p {
 
 .tooltip {
   background-color: white !important;
-  border: 1px solid #ccc;
+  /* border: 1px solid #000000; */
   opacity: 1 !important;
 }
 
 .tooltip-img {
-  max-width: 30rem; 
-  max-height: 30rem;
+  max-width: 50rem; 
+  max-height: 50rem;
 }
 
 .tooltip-inner {
-  background-color: white !important;
-  color: black !important; 
+  background-color: black !important;
+  color: rgb(255, 255, 255) !important; 
   /* border: 1px solid #ccc; */
   opacity: 1 !important; 
   max-width: 100%; 
