@@ -58,7 +58,7 @@ Se adaptaron y entrenaron 4 arquitecturas:
 | **ZmBART** | Transfer learning | Basado en mBART, entrenado con tarea auxiliar de generación parcial | [ZmBART (2021)](https://aclanthology.org/2021.findings-acl.248/) |
 | **Meta-XNLG** | Transfer learning + meta-learning | Basado en mT5, pre-entrenado en 30 lenguas | [Meta-XNLG (2022)](https://aclanthology.org/2022.findings-acl.24/) |
 | **LSTM** | Desde cero | Línea base con 2 capas bidireccionales, embeddings congelados | - |
-| **T5** | Desde cero | Arquitectura t5_small con span corruption e i.i.d. denoising | [Ulčar y Robnik-Šikonja (2023)](https://aclanthology.org/2023.eacl-main.139/) |
+| **T5** | Desde cero | Arquitectura t5_small con span corruption e i.i.d. denoising | - |
 
 #### Evaluación automática (métricas intrínsecas)
 
