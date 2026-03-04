@@ -4,7 +4,7 @@
 
 **Autor:** Harvy Martínez
 
-[Ver extracto completo de la tesis](https://github.com/Xnehil/Tesis/blob/main/ExtractoTesisGeneralidades.pdf)
+[Ver extracto de generalidades de la tesis](https://github.com/Xnehil/Tesis/blob/main/ExtractoTesisGeneralidades.pdf)
 
 ---
 
